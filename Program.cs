@@ -29,7 +29,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 cmd.Description = "Start a client to listen to the service";
                 cmd.HelpOption("--help");
 
-                var clientCount = cmd.Argument("-c", "Set number of clients");
+                var clientCount = cmd.Argument("<clients>", "Set number of clients");
 
                 cmd.OnExecute(async () =>
                 {
@@ -58,8 +58,8 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 cmd.Description = "Start a server to broadcast message through RestAPI";
                 cmd.HelpOption("--help");
 
-                var sendServer = cmd.Argument("-s", "Set number of sending server");
-                var sendSize = cmd.Argument("-z", "Set size of message");
+                var sendServer = cmd.Argument("<servers>", "Set number of sending server");
+                var sendSize = cmd.Argument("<sendSize>", "Set size of message");
                 cmd.OnExecute(() =>
                 {
                     var connectionString = connectionStringOption.Value() ?? configuration["Azure:SignalR:ConnectionString"];
