@@ -13,7 +13,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
     {
         private List<HubConnection> _connectionList;
         private Counter _counter;
-
+        private string _target = "SendMessage";
         public ClientHandler(string connectionString, string hubName, int count, Counter counter)
         {
             _counter = counter;
@@ -37,10 +37,11 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                         return Task.FromResult(serviceUtils.GenerateAccessToken(url, userId));
                     };
                 }).Build();
-                connection.On<string, long>("SendMessage",
+                connection.On<string, long>(_target,
                 (string server, long message) =>
                 {
                     _counter.Latency(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - message);
+                    _counter.RecordSentSize(_target.Length + 8);
                 });
                 _connectionList.Add(connection);
             }
