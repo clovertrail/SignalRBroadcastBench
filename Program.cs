@@ -59,6 +59,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 cmd.HelpOption("--help");
 
                 var sendServer = cmd.Argument("-s", "Set number of sending server");
+                var sendSize = cmd.Argument("-z", "Set size of message");
                 cmd.OnExecute(() =>
                 {
                     var connectionString = connectionStringOption.Value() ?? configuration["Azure:SignalR:ConnectionString"];
@@ -69,7 +70,8 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                         return 0;
                     }
 
-                    var server = new ServerHandler(connectionString, hubOption.Value(), Convert.ToInt32(sendServer.Value));
+                    var server = new ServerHandler(connectionString, hubOption.Value(),
+                        Convert.ToInt32(sendServer.Value), Convert.ToInt32(sendSize.Value));
                     server.Start();
                     Console.WriteLine("Server started...");
                     Console.ReadLine();

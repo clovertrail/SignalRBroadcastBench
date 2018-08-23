@@ -38,9 +38,9 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                     };
                 }).Build();
                 connection.On<string, long>(_target,
-                (string server, long message) =>
+                (string server, long timestamp) =>
                 {
-                    _counter.Latency(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - message);
+                    _counter.Latency(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timestamp);
                     _counter.RecordRecvSize(_target.Length + 8);
                 });
                 _connectionList.Add(connection);

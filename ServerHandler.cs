@@ -37,7 +37,9 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         private bool _disposed = false;
 
-        public ServerHandler(string connectionString, string hubName, int count)
+        private string _content;
+
+        public ServerHandler(string connectionString, string hubName, int count, int sz)
         {
             _clientList = new List<HttpClient>(count);
             for (var i = 0; i < count; i++)
@@ -49,6 +51,11 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             _hubName = hubName;
             _endpoint = _serviceUtils.Endpoint;
             _broadcastUrl = GetBroadcastUrl(_hubName);
+            var rnd = new Random();
+            byte[] content = new byte[sz];
+            rnd.NextBytes(content);
+            _content = Encoding.UTF8.GetString(content);
+
             _timer = new Timer(Broadcast, this, _interval, _interval);
         }
 
@@ -183,10 +190,5 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         public string Target { get; set; }
 
         public string[] Arguments { get; set; }
-        /*
-        public string Name { get; set; }
-
-        public long Timestamp { get; set; }
-        */
     }
 }
