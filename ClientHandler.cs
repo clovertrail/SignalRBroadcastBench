@@ -49,12 +49,19 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         public async Task StartAsync()
         {
-            var taskList = new List<Task>(_connectionList.Count);
-            for (var i = 0; i < _connectionList.Count; i++)
+            try
             {
-                taskList.Add(_connectionList[i].StartAsync());
+                var taskList = new List<Task>(_connectionList.Count);
+                for (var i = 0; i < _connectionList.Count; i++)
+                {
+                    taskList.Add(_connectionList[i].StartAsync());
+                }
+                await Task.WhenAll(taskList);
             }
-            await Task.WhenAll(taskList);
+            catch (Exception e)
+            {
+                Console.WriteLine($"error when connecting: {e.Message}");
+            }
         }
 
         public async Task DisposeAsync()
