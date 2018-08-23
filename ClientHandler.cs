@@ -37,10 +37,15 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                         return Task.FromResult(serviceUtils.GenerateAccessToken(url, userId));
                     };
                 }).Build();
-                connection.On<string, long>(_target,
-                (string server, long timestamp) =>
+                connection.Closed += e =>
                 {
-                    _counter.Latency(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timestamp);
+                    Console.WriteLine($"connection was closed: {e.Message}");
+                    return Task.CompletedTask;
+                };
+                connection.On<string, string>(_target,
+                (string server, string timestamp) =>
+                {
+                    _counter.Latency(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - Convert.ToInt64(timestamp));
                     _counter.RecordRecvSize(_target.Length + 8);
                 });
                 _connectionList.Add(connection);
