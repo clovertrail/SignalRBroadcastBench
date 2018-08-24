@@ -39,8 +39,11 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         private string _content;
 
-        public ServerHandler(string connectionString, string hubName, int count, int sz)
+        private Counter _counter;
+
+        public ServerHandler(string connectionString, string hubName, Counter counter, int count, int sz)
         {
+            _counter = counter;
             _clientList = new List<HttpClient>(count);
             for (var i = 0; i < count; i++)
             {
@@ -57,6 +60,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             _content = Encoding.UTF8.GetString(content);
 
             _timer = new Timer(Broadcast, this, _interval, _interval);
+            _counter.StartPrint();
         }
 
         private void Broadcast(object state)
@@ -98,6 +102,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                     {
                         Console.WriteLine($"Sent error: {response.StatusCode}");
                     }
+                    _counter.RecordSentSize(_target.Length + 8);
                 }
                 catch (Exception e)
                 {
