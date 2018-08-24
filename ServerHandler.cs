@@ -15,8 +15,8 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 {
     public class ServerHandler : IDisposable
     {
-        private readonly HttpClient _client;
-
+        private HttpClient _client;
+        private List<HttpClient> _clientList;
         private readonly string _serverName;
 
         private readonly ServiceUtils _serviceUtils;
@@ -40,12 +40,27 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         private string _content;
         private int _count;
         private Counter _counter;
+        private bool _multipleHttpClient;
 
-        public ServerHandler(string connectionString, string hubName, Counter counter, int count, int sz)
+        public ServerHandler(string connectionString, string hubName, Counter counter, int count, int sz, bool multipleHttpClient=false)
         {
             _counter = counter;
             _count = count;
-            _client = new HttpClient();
+            _multipleHttpClient = multipleHttpClient;
+            if (_multipleHttpClient)
+            {
+                _clientList = new List<HttpClient>(_count);
+                for (var i = 0; i < _count; i++)
+                {
+                    _clientList.Add(new HttpClient());
+                }
+            }
+            else
+            {
+                _client = new HttpClient();
+            }
+            
+            _client.DefaultRequestHeaders.ConnectionClose = true;
             _serverName = GenerateServerName();
             _serviceUtils = new ServiceUtils(connectionString);
             _hubName = hubName;
@@ -91,10 +106,19 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         {
             for (var i = 0; i < _count; i++)
             {
+                HttpClient client = null;
+                if (_multipleHttpClient)
+                {
+                    client = _clientList[i];
+                }
+                else
+                {
+                    client = _client;
+                }
                 try
                 {
                     var request = BuildRequest(_broadcastUrl);
-                    var response = await _client.SendAsync(request);
+                    var response = await client.SendAsync(request);
                     if (response.StatusCode != HttpStatusCode.Accepted)
                     {
                         Console.WriteLine($"Sent error: {response.StatusCode}");
