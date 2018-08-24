@@ -61,7 +61,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 var sendServer = cmd.Argument("<servers>", "Set number of sending server");
                 var sendSize = cmd.Argument("<sendSize>", "Set size of message");
                 var useMultipleHttpClient = cmd.Argument("<useMultipleHttpClient>", "true/false for whether creating multiple HttpClient");
-                bool multipleHttpClient = Convert.ToBoolean(useMultipleHttpClient);
+                bool multipleHttpClient = Convert.ToBoolean(useMultipleHttpClient.Value);
 
                 cmd.OnExecute(() =>
                 {
