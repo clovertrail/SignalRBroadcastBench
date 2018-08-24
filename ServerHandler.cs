@@ -52,7 +52,9 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 _clientList = new List<HttpClient>(_count);
                 for (var i = 0; i < _count; i++)
                 {
-                    _clientList.Add(new HttpClient());
+                    var httpClient = new HttpClient();
+                    httpClient.DefaultRequestHeaders.ConnectionClose = true;
+                    _clientList.Add(httpClient);
                 }
             }
             else
@@ -119,10 +121,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 {
                     var request = BuildRequest(_broadcastUrl);
                     var response = await client.SendAsync(request);
-                    if (response.StatusCode != HttpStatusCode.Accepted)
-                    {
-                        Console.WriteLine($"Sent error: {response.StatusCode}");
-                    }
+                    response.EnsureSuccessStatusCode();
                     _counter.RecordSentSize(_target.Length + 8);
                 }
                 catch (Exception e)
