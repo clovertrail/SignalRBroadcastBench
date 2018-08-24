@@ -63,14 +63,14 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 cmd.OnExecute(() =>
                 {
                     var connectionString = connectionStringOption.Value() ?? configuration["Azure:SignalR:ConnectionString"];
-
                     if (string.IsNullOrEmpty(connectionString) || !hubOption.HasValue())
                     {
                         MissOptions();
                         return 0;
                     }
 
-                    var server = new ServerHandler(connectionString, hubOption.Value(),
+                    var counter = new Counter();
+                    var server = new ServerHandler(connectionString, hubOption.Value(), counter,
                         Convert.ToInt32(sendServer.Value), Convert.ToInt32(sendSize.Value));
                     server.Start();
                     Console.WriteLine("Server started...");
