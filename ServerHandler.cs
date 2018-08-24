@@ -69,9 +69,9 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         {
             if (_start)
             {
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
-                    _ = SendBroadcastRequest();
+                    await SendBroadcastRequest();
                 });
             }
         }
@@ -90,11 +90,18 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         {
             for (var i = 0; i < _clientList.Count; i++)
             {
-                var request = BuildRequest(_broadcastUrl);
-                var response = await _clientList[i].SendAsync(request);
-                if (response.StatusCode != HttpStatusCode.Accepted)
+                try
                 {
-                    Console.WriteLine($"Sent error: {response.StatusCode}");
+                    var request = BuildRequest(_broadcastUrl);
+                    var response = await _clientList[i].SendAsync(request);
+                    if (response.StatusCode != HttpStatusCode.Accepted)
+                    {
+                        Console.WriteLine($"Sent error: {response.StatusCode}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Fail to send message: {e.Message}");
                 }
             }
         }
