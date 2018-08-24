@@ -15,7 +15,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 {
     public class ServerHandler : IDisposable
     {
-        private List<HttpClient> _clientList;
+        private readonly HttpClient _client;
 
         private readonly string _serverName;
 
@@ -38,17 +38,14 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         private bool _disposed = false;
 
         private string _content;
-
+        private int _count;
         private Counter _counter;
 
         public ServerHandler(string connectionString, string hubName, Counter counter, int count, int sz)
         {
             _counter = counter;
-            _clientList = new List<HttpClient>(count);
-            for (var i = 0; i < count; i++)
-            {
-                _clientList.Add(new HttpClient());
-            }
+            _count = count;
+            _client = new HttpClient();
             _serverName = GenerateServerName();
             _serviceUtils = new ServiceUtils(connectionString);
             _hubName = hubName;
@@ -92,12 +89,12 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         public async Task SendBroadcastRequest()
         {
-            for (var i = 0; i < _clientList.Count; i++)
+            for (var i = 0; i < _count; i++)
             {
                 try
                 {
                     var request = BuildRequest(_broadcastUrl);
-                    var response = await _clientList[i].SendAsync(request);
+                    var response = await _client.SendAsync(request);
                     if (response.StatusCode != HttpStatusCode.Accepted)
                     {
                         Console.WriteLine($"Sent error: {response.StatusCode}");
@@ -189,10 +186,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             if (!_disposed)
             {
                 _timer.Dispose();
-                for (var i = 0; i < _clientList.Count; i++)
-                {
-                    _clientList[i].Dispose();
-                }
+                _client.Dispose();
             }
         }
     }
