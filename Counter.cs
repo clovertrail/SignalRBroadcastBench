@@ -44,12 +44,14 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         {
             Interlocked.Increment(ref _totalSent);
             Interlocked.Add(ref _totalSentSize, sentSize);
+            _hasRecord = true;
         }
 
         public void RecordRecvSize(long recvSize)
         {
             Interlocked.Increment(ref _totalReceived);
             Interlocked.Add(ref _totalRecvSize, recvSize);
+            _hasRecord = true;
         }
 
         public void StartPrint()
