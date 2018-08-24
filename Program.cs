@@ -72,6 +72,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                     var counter = new Counter();
                     var server = new ServerHandler(connectionString, hubOption.Value(), counter,
                         Convert.ToInt32(sendServer.Value), Convert.ToInt32(sendSize.Value));
+                    counter.StartPrint();
                     server.Start();
                     Console.WriteLine("Server started...");
                     Console.ReadLine();
