@@ -53,7 +53,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 for (var i = 0; i < _count; i++)
                 {
                     var httpClient = new HttpClient();
-                    httpClient.DefaultRequestHeaders.ConnectionClose = true;
+                    //httpClient.DefaultRequestHeaders.ConnectionClose = true;
                     _clientList.Add(httpClient);
                 }
             }
@@ -62,7 +62,6 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 _client = new HttpClient();
             }
             
-            _client.DefaultRequestHeaders.ConnectionClose = true;
             _serverName = GenerateServerName();
             _serviceUtils = new ServiceUtils(connectionString);
             _hubName = hubName;
