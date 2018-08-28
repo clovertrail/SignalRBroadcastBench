@@ -41,6 +41,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         private int _count;
         private Counter _counter;
         private bool _multipleHttpClient;
+        private bool _errorOccurs;
 
         public ServerHandler(string connectionString, string hubName, Counter counter, int count, int sz, bool multipleHttpClient=false)
         {
@@ -53,7 +54,6 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 for (var i = 0; i < _count; i++)
                 {
                     var httpClient = new HttpClient();
-                    //httpClient.DefaultRequestHeaders.ConnectionClose = true;
                     _clientList.Add(httpClient);
                 }
             }
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             byte[] content = new byte[sz];
             rnd.NextBytes(content);
             _content = Encoding.UTF8.GetString(content);
-
+            _errorOccurs = false;
             _timer = new Timer(Broadcast, this, _interval, _interval);
             _counter.StartPrint();
         }
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         private void BroadcastImpl()
         {
-            if (_start)
+            if (_start && !_errorOccurs)
             {
                 Task.Run(async () =>
                 {
@@ -125,6 +125,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 }
                 catch (Exception e)
                 {
+                    _errorOccurs = true;
                     Console.WriteLine($"Fail to send message: {e.Message}");
                 }
             }
