@@ -83,23 +83,39 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             StringBuilder sb = new StringBuilder();
             for (var i = 0; i < Length; i++)
             {
-                sb.Clear();
-                var label = Step + i * Step;
-                if (i < Length - 1)
+                if (_latency[i] != 0)
                 {
-                    sb.Append("message:lt:");
+                    sb.Clear();
+                    var label = Step + i * Step;
+                    if (i < Length - 1)
+                    {
+                        sb.Append("message:lt:");
+                    }
+                    else
+                    {
+                        sb.Append("message:ge:");
+                    }
+                    sb.Append(Convert.ToString(label));
+                    dic[sb.ToString()] = _latency[i];
                 }
-                else
-                {
-                    sb.Append("message:ge:");
-                }
-                sb.Append(Convert.ToString(label));
-                dic[sb.ToString()] = _latency[i];
             }
-            dic["message:sent"] = Interlocked.Read(ref _totalSent);
-            dic["message:received"] = Interlocked.Read(ref _totalReceived);
-            dic["message:sendSize"] = Interlocked.Read(ref _totalSentSize);
-            dic["message:recvSize"] = Interlocked.Read(ref _totalRecvSize);
+            if (Interlocked.Read(ref _totalSent) != 0)
+            {
+                dic["message:sent"] = Interlocked.Read(ref _totalSent);
+            }
+            if (Interlocked.Read(ref _totalReceived) != 0)
+            {
+                dic["message:received"] = Interlocked.Read(ref _totalReceived);
+            }
+            if (Interlocked.Read(ref _totalSentSize) != 0)
+            {
+                dic["message:sendSize"] = Interlocked.Read(ref _totalSentSize);
+            }
+            if (Interlocked.Read(ref _totalRecvSize) != 0)
+            {
+                dic["message:recvSize"] = Interlocked.Read(ref _totalRecvSize);
+            }
+            
             // dump out all statistics
             Console.WriteLine(JsonConvert.SerializeObject(new
             {

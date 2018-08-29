@@ -3,6 +3,8 @@ Benchmark for broadcast message through Azure SignalR REST API. The test allows 
 
 The following example first launch 1 client, and then starts the server to broadcast messages to the client. The message contains a timestamp, so when the client receives the message, it gets the latency by calculating 'Now - timestamp', and record all messages' latency distribution.
 
+Press any key on the console to stop the client or server.
+
 Launch 100 clients:
 dotnet run -- -c "YOUR_CONNECTION_STRING" -h "TEST_HUB" client 1
 
