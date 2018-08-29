@@ -156,6 +156,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         public void Dispose()
         {
+            Stop();
             if (!_disposed)
             {
                 _timer.Dispose();
