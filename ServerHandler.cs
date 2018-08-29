@@ -16,7 +16,6 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
     public class ServerHandler : IDisposable
     {
         private HttpClient _client;
-        private List<HttpClient> _clientList;
         private readonly string _serverName;
 
         private readonly ServiceUtils _serviceUtils;
@@ -41,26 +40,13 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         private int _count;
         private Counter _counter;
         private bool _multipleHttpClient;
-        private bool _errorOccurs;
+        private long _errorOccurs;
 
-        public ServerHandler(string connectionString, string hubName, Counter counter, int count, int sz, bool multipleHttpClient=false)
+        public ServerHandler(string connectionString, string hubName, Counter counter, int count, int sz)
         {
             _counter = counter;
             _count = count;
-            _multipleHttpClient = multipleHttpClient;
-            if (_multipleHttpClient)
-            {
-                _clientList = new List<HttpClient>(_count);
-                for (var i = 0; i < _count; i++)
-                {
-                    var httpClient = new HttpClient();
-                    _clientList.Add(httpClient);
-                }
-            }
-            else
-            {
-                _client = new HttpClient();
-            }
+            _client = new HttpClient();
             
             _serverName = GenerateServerName();
             _serviceUtils = new ServiceUtils(connectionString);
@@ -71,7 +57,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             byte[] content = new byte[sz];
             rnd.NextBytes(content);
             _content = Encoding.UTF8.GetString(content);
-            _errorOccurs = false;
+            _errorOccurs = 0;
             _timer = new Timer(Broadcast, this, _interval, _interval);
             _counter.StartPrint();
         }
@@ -84,7 +70,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         private void BroadcastImpl()
         {
-            if (_start && !_errorOccurs)
+            if (_start && Interlocked.Read(ref _errorOccurs) == 0)
             {
                 Task.Run(async () =>
                 {
@@ -105,55 +91,30 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         public async Task SendBroadcastRequest()
         {
-            for (var i = 0; i < _count; i++)
+            try
             {
-                HttpClient client = null;
-                if (_multipleHttpClient)
+                for (var i = 0; i < _count; i++)
                 {
-                    client = _clientList[i];
-                }
-                else
-                {
-                    client = _client;
-                }
-                try
-                {
+                    if (Interlocked.Read(ref _errorOccurs) != 0)
+                        break;
+                    var client = _client;
                     var request = BuildRequest(_broadcastUrl);
                     var response = await client.SendAsync(request);
                     response.EnsureSuccessStatusCode();
                     _counter.RecordSentSize(_target.Length + 8);
                 }
-                catch (Exception e)
-                {
-                    _errorOccurs = true;
-                    Console.WriteLine($"Fail to send message: {e.Message}");
-                }
+            }
+            catch (Exception e)
+            {
+                Interlocked.Exchange(ref _errorOccurs, 1);
+                _counter.StopPrint();
+                Console.WriteLine($"Fail to send message: {e.Message}");
             }
         }
 
         private Uri GetUrl(string baseUrl)
         {
             return new UriBuilder(baseUrl).Uri;
-        }
-
-        private string GetSendToUserUrl(string hubName, string userId)
-        {
-            return $"{GetBaseUrl(hubName)}/user/{userId}";
-        }
-
-        private string GetSendToUsersUrl(string hubName, string userList)
-        {
-            return $"{GetBaseUrl(hubName)}/users/{userList}";
-        }
-
-        private string GetSendToGroupUrl(string hubName, string group)
-        {
-            return $"{GetBaseUrl(hubName)}/group/{group}";
-        }
-
-        private string GetSendToGroupsUrl(string hubName, string groupList)
-        {
-            return $"{GetBaseUrl(hubName)}/groups/{groupList}";
         }
 
         private string GetBroadcastUrl(string hubName)
@@ -191,17 +152,6 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             request.Content = new StringContent(JsonConvert.SerializeObject(payloadRequest), Encoding.UTF8, "application/json");
 
             return request;
-        }
-
-        private void ShowHelp()
-        {
-            Console.WriteLine("*********Usage*********\n" +
-                              "send user <User Id>\n" +
-                              "send users <User Id List>\n" +
-                              "send group <Group Name>\n" +
-                              "send groups <Group List>\n" +
-                              "broadcast\n" +
-                              "***********************");
         }
 
         public void Dispose()

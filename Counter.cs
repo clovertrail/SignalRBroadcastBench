@@ -62,9 +62,14 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             }
         }
 
+        public void StopPrint()
+        {
+            Interlocked.CompareExchange(ref _startPrint, 0, 1);
+        }
+
         private void Report(object state)
         {
-            if (_hasRecord)
+            if (_hasRecord && Interlocked.Read(ref _startPrint) == 1)
             {
                 ((Counter)state).InternalReport();
                 _hasRecord = false;
