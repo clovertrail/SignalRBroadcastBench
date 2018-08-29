@@ -157,6 +157,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         public void Dispose()
         {
             Stop();
+            Task.Delay(1000).Wait(); // wait for draining out all sending message
             if (!_disposed)
             {
                 _timer.Dispose();
