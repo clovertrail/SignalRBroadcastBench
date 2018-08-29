@@ -39,7 +39,6 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         private string _content;
         private int _count;
         private Counter _counter;
-        private bool _multipleHttpClient;
         private long _errorOccurs;
 
         public ServerHandler(string connectionString, string hubName, Counter counter, int count, int sz)
