@@ -28,6 +28,7 @@ The output on client console after running ~2 minutes:
 `
 
 The output on server console after running ~2 minutes:
+
 `
 {"Time":"2018-08-29T02:48:31Z","Counters":{"message:sent":44257,"message:sendSize":840883}}
 {"Time":"2018-08-29T02:48:32Z","Counters":{"message:sent":44671,"message:sendSize":848749}}
